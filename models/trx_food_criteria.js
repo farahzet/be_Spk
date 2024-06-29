@@ -1,0 +1,43 @@
+'use strict';
+const {
+  Model
+} = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class trx_food_criteria extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      trx_food_criteria.belongsTo(models.food, {
+        foreignKey: 'food_id',
+        as: 'food_criteria'
+      });
+
+      trx_food_criteria.belongsTo(models.criteria, {
+        foreignKey: 'criteria_id',
+        as: 'criteriaview'
+      })
+    }
+  }
+
+  trx_food_criteria.init({
+    food_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    criteria_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    calculation: {
+      type: DataTypes.DECIMAL,
+      allowNull: false
+    },
+  }, {
+    sequelize,
+    modelName: 'trx_food_criteria',
+  });
+  return trx_food_criteria;
+};
