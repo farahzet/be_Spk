@@ -1,6 +1,6 @@
 
 const ApiError = require("../utils/apiError");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');
 const {users} = require("../models")
