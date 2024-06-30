@@ -3,7 +3,7 @@ const ApiError = require("../utils/apiError");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');
-const {users} = require("../models")
+const {users, user_calculation_v} = require("../models")
 
 const login =  async (req, res, next) => {
     try{
@@ -213,6 +213,21 @@ const getUserLoggedIn = async (req, res, next) => {
 //     }
 // }
 
+
+const getUserCalculationV = async (req, res, next) => {
+    try{
+        const allUserCalculation = await user_calculation_v.findAll();
+
+        res.status(200).json({
+            tatus: "Success",
+            message: "All User Calculation successfully retrieved",
+            data: { allUserCalculation },
+        });
+    }catch (err){
+        return next (new ApiError(err.message, 400))
+    }
+}
+
 module.exports = {
     login,
     register,
@@ -221,4 +236,5 @@ module.exports = {
     // getAllUser,
     // updateActivity,
     // deleteActivity
+    getUserCalculationV
 }
