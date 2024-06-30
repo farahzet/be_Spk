@@ -1,6 +1,6 @@
 
 const ApiError = require("../utils/apiError");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');
 const {users} = require("../models")
@@ -26,7 +26,7 @@ const login =  async (req, res, next) => {
                 },
                 process.env.JWT_SECRET,
                 {
-					expiresIn: process.env.JWT_EXP,
+					expiresIn: process.env.JWT_EXPIRED,
 				}
             )
             res.cookie('_token', token, {
