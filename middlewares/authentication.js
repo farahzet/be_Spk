@@ -14,20 +14,28 @@ module.exports = async (req, res, next) => {
         const token = bearerToken.split('Bearer ')[1];
 
         const payload = jwt.verify(token, process.env.JWT_SECRET)
+        // console.log('Payload:', payload);
 
-        const userData = await users.findOne({
-            where: {
-                id: payload.user_id,
+        // const userData = await users.findOne({
+
+        //     where: {
+        //         id: payload.user_id,
                 
-            },
-        });
+        //     },
+        // });
 
-        // const userData = await users.findByPk(payload.id);
+        // console.log('User ID:', payload.user_id);
+        
+        const userData = await users.findByPk(payload.user_id);
+        console.log('User ID:', payload.user_id);
 
-        if(!userData){
+        req.user = userData;
+
+        if(!userData.id){
+            console.log("masuk")
             return next (new ApiError ("User not found", 400))
         }
-        req.userData=userData;
+        console.log('User Data:', userData.id);
         next();
 
         
