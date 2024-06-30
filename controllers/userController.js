@@ -26,7 +26,7 @@ const login =  async (req, res, next) => {
                 },
                 process.env.JWT_SECRET,
                 {
-					expiresIn: process.env.JWT_EXP,
+					expiresIn: process.env.JWT_EXPIRED,
 				}
             )
             res.cookie('_token', token, {
