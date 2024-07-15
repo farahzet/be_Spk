@@ -1,4 +1,5 @@
 const {food} = require("../models");
+const {criteria, sequelize} = require("../models");
 const ApiError = require("../utils/apiError");
 
 
@@ -94,6 +95,8 @@ const deleteFood = async (req, res, next) => {
             },
         })
 
+        // await findFood.destroy();
+
         res.status(200).json({
             status: "Success",
             message: "Food successfully deleted",
@@ -104,10 +107,31 @@ const deleteFood = async (req, res, next) => {
     }
 }
 
+const getTableName = async (req, res, next) => {
+    try {
+        const foodAttributes = ['food_code', 'food_name', 'food_desc'];
+        const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
+
+        const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
+
+        res.json({
+            data: {
+                food: foodAttributes,
+                criteria: criteriaNames,
+            },
+        });
+    } catch (error) {
+        next(new ApiError(error.message, 500));
+    }
+}
+
+
+
 
 module.exports = {
     createFood,
     getAllFood,
     updateFood,
-    deleteFood
+    deleteFood,
+    getTableName
 }

@@ -14,17 +14,6 @@ module.exports = async (req, res, next) => {
         const token = bearerToken.split('Bearer ')[1];
 
         const payload = jwt.verify(token, process.env.JWT_SECRET)
-        // console.log('Payload:', payload);
-
-        // const userData = await users.findOne({
-
-        //     where: {
-        //         id: payload.user_id,
-                
-        //     },
-        // });
-
-        // console.log('User ID:', payload.user_id);
         
         const userData = await users.findByPk(payload.user_id);
         console.log('User ID:', payload.user_id);

@@ -1,20 +1,60 @@
-const {trx_calculations} = require("../models");
+const {trx_calculations, food_calculation_v, activities} = require("../models");
 const ApiError = require("../utils/apiError");
 
 
 
 const createCalculation = async (req, res, next) => {
-    const {user_id, food_id, activity_id, weight, height, gender, age} = req.body;
+    const {user_id, activity_id, weight, height, gender, age, calories_score} = req.body;
+    
 
     try {
+        const activityData = await activities.findOne({ where: { id: activity_id } });
+
+        if (!activityData) {
+            throw new Error('Invalid activity ID');
+        }
+
+
+        const heightInMeters = height / 100;
+        const imt = weight / (heightInMeters ** 2);
+
+        const heightMinus100 = height - 100;
+        const bbi = heightMinus100 - (0.1 * heightMinus100);
+
+        let kaloriBasal;
+        if (gender === 'male') {
+            kaloriBasal = bbi * 30;
+        } else if (gender === 'female') {
+            kaloriBasal = bbi * 25;
+        } else {
+            throw new Error('Invalid gender value');
+        }
+
+        const activityUser = parseFloat(activityData.bobot);
+        if (isNaN(activityUser)) {
+            throw new Error('Invalid activity bobot value');
+        }
+
+        let totalCalories = kaloriBasal + (activityUser * kaloriBasal);
+
+        if (age > 40 && age < 60) {
+            totalCalories -= totalCalories * 0.05;
+        } else if (age >= 60 && age <= 69) {
+            totalCalories -= totalCalories * 0.10;
+        } else if (age > 69) {
+            totalCalories -= totalCalories * 0.15; 
+        }
+
         const data = {
             user_id, 
-            food_id, 
             activity_id, 
             weight, 
             height, 
             gender, 
-            age
+            age,
+            kalori_basal: kaloriBasal,
+            activityuser : activityUser,
+            calories_score: totalCalories
         }
         console.log(data);
         const newCalculation = await trx_calculations.create(data);
@@ -114,10 +154,25 @@ const deletecalculation = async (req, res, next) => {
     }
 }
 
+const getAllFoodCalculation = async (req, res, next) => {
+    try{
+        const allFoodCalculation = await food_calculation_v.findAll();
+
+        res.status(200).json({
+            tatus: "Success",
+            message: "All Food Calculation successfully retrieved",
+            data: { allFoodCalculation },
+        });
+    }catch (err){
+        return next (new ApiError(err.message, 400))
+    }
+}
+
 
 module.exports = {
     createCalculation,
     getAllCalculation,
     updateCalculation,
-    deletecalculation
+    deletecalculation,
+    getAllFoodCalculation
 }

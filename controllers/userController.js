@@ -3,7 +3,9 @@ const ApiError = require("../utils/apiError");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');
-const {users, user_calculation_v} = require("../models")
+const { Sequelize } = require('sequelize');
+const {users, user_calculation_v,sequelize } = require("../models")
+
 
 const login =  async (req, res, next) => {
     try{
@@ -110,110 +112,6 @@ const getUserLoggedIn = async (req, res, next) => {
     }
 }
 
-// const createUser = async (req, res, next) => {
-//     const {username, email, password, phone} = req.body;
-
-//     try {
-//         const data = {
-//             username, 
-//             email, 
-//             password, 
-//             phone
-//         }
-//         console.log(data);
-//         const newUser = await users.create(data);
-
-//         res.status(201).json({
-//             status: "Success",
-//             message: "Activity successfully created",
-//             data: { newUser },
-//         })
-//     }catch (err) {
-//         return next (new ApiError(err.message, 400))
-//     }
-// }
-// const getAllUser = async (req, res, next) => {
-//     try{
-//         const allUser = await users.findAll();
-
-//         res.status(200).json({
-//             tatus: "Success",
-//             message: "All User successfully retrieved",
-//             data: { allUser },
-//         });
-//     }catch (err){
-//         return next (new ApiError(err.message, 400))
-//     }
-// }
-// const updateActivity = async (req, res, next) => {
-//     const {username, email, password, phone} = req.body;
-
-//     try{
-//         const id = req.params.id;
-//         const findUser = await users.findOne({
-//             where: {
-//                 id,
-//             }
-//         })
-//         if (!findUser){
-//             return next (new ApiError(`User with id '${id}' not found`))
-//         }
-
-//         await users.update({
-//             username, 
-//             email, 
-//             password, 
-//             phone
-//         },
-//         {
-//             where: {
-//                 id,
-//             }
-//         })
-
-//         const updateUser = await users.findOne({
-//             where: {
-//                 id,
-//             }
-//         })
-
-//         res.status(200).json({
-//             status: "Success",
-//             message: "User Successfully Updated",
-//             requestAt : req.requestTime,
-//             data:{updateUser}
-//         })
-//     }catch (err) {
-//         return next (new ApiError (err.message, 400))
-//     }
-
-// const deleteActivity = async (req, res, next) => {
-//     try {
-//         const id=req.params.id;
-
-//         const findUser = await users.findByPk(id)
-
-//         if (!findUser){
-//             return next (new ApiError (`User with id '${id}' not found`))
-//         }
-
-//         await findUser.destroy({
-//             where:{
-//                 id: req.params.id,
-//             },
-//         })
-
-//         res.status(200).json({
-//             status: "Success",
-//             message: "User successfully deleted",
-//             requestAt: req.requestTime
-//         })
-//     } catch (err) {
-//         return next (new ApiError (err.message, 400))
-//     }
-// }
-
-
 const getUserCalculationV = async (req, res, next) => {
     try{
         const allUserCalculation = await user_calculation_v.findAll();
@@ -228,13 +126,32 @@ const getUserCalculationV = async (req, res, next) => {
     }
 }
 
+const getUserRegisterIn = async (req, res, next) => {
+
+    try {
+
+		const endUsers = await users.findAll({
+        attributes: ['username', 'email', 'phone', 
+            [sequelize.literal("TO_CHAR(\"createdAt\", 'DD-MM-YYYY')"), 'createdAtFormatted']
+        ],
+            where: {
+                role: 'endUser'
+            }
+        });
+
+        res.status(200).json({
+            status: true,
+            data: endUsers
+        })
+    } catch (err) {
+        return next(new ApiError(500, { message: err.message }));
+    }
+}
+
 module.exports = {
     login,
     register,
     getUserLoggedIn,
-    // createUser,
-    // getAllUser,
-    // updateActivity,
-    // deleteActivity
-    getUserCalculationV
+    getUserCalculationV,
+    getUserRegisterIn
 }

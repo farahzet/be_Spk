@@ -108,9 +108,49 @@ const deleteCriteria = async (req, res, next) => {
     }
 }
 
+const getFormName = async (req, res, next) => {
+    try {
+        const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
+
+        const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
+
+        res.json({
+            data: {
+                criteria: criteriaNames,
+            },
+        });
+    } catch (error) {
+        next(new ApiError(error.message, 500));
+    }
+}
+
+const getCriteriaForThead = async (req, res, next) => {
+    try {
+        const criteriaData = await criteria.findAll({
+            attributes: ['criteria_code', 'criteria_name', 'tren', 'bobot']
+          });
+      
+          // Mengubah nilai tren
+          criteriaData = criteriaData.map(criterion => {
+            if (criterion.tren === 'positif') {
+              criterion.tren = '+';
+            } else if (criterion.tren === 'negatif') {
+              criterion.tren = '-';
+            }
+            return criterion;
+          });
+      
+          res.json(criteriaData);
+        } catch (error) {
+          res.status(500).json({ error: 'Something went wrong' });
+    }
+}
+
 module.exports = {
     createCriteria,
     getAllCriteria,
     updateCrireia,
-    deleteCriteria
+    deleteCriteria,
+    getFormName,
+    getCriteriaForThead
 }
