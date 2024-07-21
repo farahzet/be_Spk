@@ -46,11 +46,11 @@ const updateCrireia = async (req, res, next) => {
         const id = req.params.id;
         const findCriteria = await criteria.findOne({
             where: {
-                id,
+                id
             }
         })
         if (!findCriteria){
-            return next (new ApiError(`Criteria with id '${id}' not found`))
+            return next (new ApiError(`Criteria with id '${id}' not found`, 400))
         }
 
         await criteria.update({
@@ -61,15 +61,16 @@ const updateCrireia = async (req, res, next) => {
         },
         {
             where: {
-                id,
+                id
             }
         })
 
         const updateCriteria = await criteria.findOne({
             where: {
-                id,
+                id
             }
         })
+        console.log("Data criteria berhasil diperbarui:", updateCriteria);
 
         res.status(200).json({
             status: "Success",
@@ -110,9 +111,8 @@ const deleteCriteria = async (req, res, next) => {
 
 const getFormName = async (req, res, next) => {
     try {
-        const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
+        const criteriaNames = await criteria.findAll({ attributes: ['id', 'criteria_name'] });
 
-        const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
 
         res.json({
             data: {

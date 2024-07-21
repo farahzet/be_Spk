@@ -43,6 +43,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL,
       allowNull: false
     },
+    // calculation_tren: {
+    //   type: DataTypes.DECIMAL,
+    //   allowNull: false
+    // },
+    // calculation_bobot: {
+    //   type: DataTypes.DECIMAL,
+    //   allowNull: false
+    // },
+    // rank: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false
+    // },
   }, {
     sequelize,
     modelName: 'trx_food_criteria',

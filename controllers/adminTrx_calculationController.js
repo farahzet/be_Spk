@@ -42,7 +42,7 @@ const createCalculation = async (req, res, next) => {
         } else if (age >= 60 && age <= 69) {
             totalCalories -= totalCalories * 0.10;
         } else if (age > 69) {
-            totalCalories -= totalCalories * 0.15; 
+            totalCalories -= totalCalories * 0.20; 
         }
 
         const data = {

@@ -29,7 +29,7 @@ const getAllFood = async (req, res, next) => {
         const allFood = await food.findAll();
 
         res.status(200).json({
-            tatus: "Success",
+            status: "Success",
             message: "All Food successfully retrieved",
             data: { allFood },
         });
@@ -125,6 +125,24 @@ const getTableName = async (req, res, next) => {
     }
 }
 
+const getTableNameScore = async (req, res, next) => {
+    try {
+        const foodAttributes = ['id', 'food_name', 'food_desc'];
+        const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
+
+        const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
+
+        res.json({
+            data: {
+                food: foodAttributes,
+                criteria: criteriaNames,
+            },
+        });
+    } catch (error) {
+        next(new ApiError(error.message, 500));
+    }
+}
+
 
 
 
@@ -133,5 +151,6 @@ module.exports = {
     getAllFood,
     updateFood,
     deleteFood,
-    getTableName
+    getTableName,
+    getTableNameScore
 }

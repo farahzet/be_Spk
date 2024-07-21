@@ -11,9 +11,10 @@ router.post("/create", createCriteria);
 router.get("/", getAllCriteria);
 router.get("/criteria-form", getFormName);
 // router.get("/", authenticate, checkRole('admin'), validation(criteria), getAllCriteria);
-router.patch("/:id", authenticate, checkRole('admin'), validation(criteria), updateCrireia);
+// router.patch("/:id", authenticate, checkRole('admin'), validation(criteria), updateCrireia);
 router.delete("/:id", authenticate, checkRole('admin'), validation(criteria), deleteCriteria);
 // router.get("/criteria-form", authenticate, checkRole('admin'), validation(criteria), getFormName);
 router.get("/criteria-thead", getCriteriaForThead);
+router.patch("/:id", updateCrireia);
 
 module.exports = router
