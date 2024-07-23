@@ -11,9 +11,8 @@ const createCalculation = async (req, res, next) => {
         const activityData = await activities.findOne({ where: { id: activity_id } });
 
         if (!activityData) {
-            throw new Error('Invalid activity ID');
+            return next (new ApiError(`Invalid activity ID`))
         }
-
 
         const heightInMeters = height / 100;
         const imt = weight / (heightInMeters ** 2);
@@ -27,13 +26,16 @@ const createCalculation = async (req, res, next) => {
         } else if (gender === 'female') {
             kaloriBasal = bbi * 25;
         } else {
-            throw new Error('Invalid gender value');
+            return next (new ApiError(`Invalid gender value`))
         }
 
         const activityUser = parseFloat(activityData.bobot);
         if (isNaN(activityUser)) {
-            throw new Error('Invalid activity bobot value');
+            return next (new ApiError(`Invalid activity bobot value`))
+            
         }
+
+
 
         let totalCalories = kaloriBasal + (activityUser * kaloriBasal);
 

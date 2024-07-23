@@ -2,6 +2,7 @@ const {trx_food_criteria, criteria, food, food_calculation_v} = require("../mode
 const ApiError = require("../utils/apiError");
 const sequelize = require('../models').sequelize;
 const { transformCriteriaValues } = require ("../utils/cpi");
+const { Op, Sequelize } = require("sequelize");
 
 const createFoodCriteria = async (req, res, next) => {
     const { food_id, criteria_id, calculation} = req.body;
@@ -27,7 +28,7 @@ const createFoodCriteria = async (req, res, next) => {
 
 
 const FoodCriteria = async (req, res, next) => {
-    const { food_code, food_name, food_desc, criteriaValues } = req.body;
+    const { food_code, food_name, food_desc, food_calories, criteriaValues } = req.body;
 
     console.log("Received data:", req.body);
 
@@ -43,6 +44,7 @@ const FoodCriteria = async (req, res, next) => {
             food_code,
             food_name,
             food_desc,
+            food_calories,
         }, { transaction: t });
 
         console.log("Created new food:", newFood);
@@ -55,13 +57,13 @@ const FoodCriteria = async (req, res, next) => {
             console.log("Processing criteria:", criteria_name, "with calculation:", calculation);
             
             if (!criteria_name || criteria_name === "0") {
-                throw new Error(`Invalid criteria name: ${criteria_name}`);
+                return next(new ApiError(`Invalid criteria name: ${criteria_name}`));
             }
 
             const criteriaRecord = await criteria.findOne({ where: { criteria_name } }, { transaction: t });
 
             if (!criteriaRecord) {
-                throw new Error(`Criteria with name ${criteria_name} not found`);
+                return next(new ApiError(`Criteria with name ${criteria_name} not found`));
             }
 
             const newFoodCriteria = await trx_food_criteria.create({
@@ -89,6 +91,7 @@ const FoodCriteria = async (req, res, next) => {
                     id: newFood.id,
                     name: newFood.food_name,
                     code: newFood.food_code,
+                    calories: newFood.food_calories,
                     description: newFood.food_desc,
                     createdAt: newFood.createdAt,
                     updatedAt: newFood.updatedAt,
@@ -102,7 +105,6 @@ const FoodCriteria = async (req, res, next) => {
         return next(new ApiError(err.message, 500));
     }
 }
-
 
 const getAllFoodCriteria = async (req, res, next) => {
     try {
@@ -127,6 +129,7 @@ const getAllFoodCriteria = async (req, res, next) => {
             food_code: foodItem.food_code,
             food_name: foodItem.food_name,
             food_desc: foodItem.food_desc,
+            food_calories: foodItem.food_calories,
             criteria_values: foodItem.food_criteria.map(criteriaItem => ({
                 criteria_id: criteriaItem.criteriaview.id,
                 criteria_name: criteriaItem.criteriaview.criteria_name,
@@ -145,16 +148,15 @@ const getAllFoodCriteria = async (req, res, next) => {
     }
 };
 
-
 const updateFoodCriteria = async (req, res, next) => {
     const { id } = req.params; 
-    const { food_code, food_name, food_desc, criteriaValues } = req.body;
+    const { food_code, food_name, food_desc, food_calories, criteriaValues } = req.body;
 
     console.log("Received data:", req.body);
 
     if (!criteriaValues || typeof criteriaValues !== 'object' || Object.keys(criteriaValues).length === 0) {
         console.error("Invalid criteriaValues:", criteriaValues);
-        return next(new ApiError('Invalid criteriaValues', 400));
+        return next(new ApiError('Invalid criteriaValues'));
     }
 
     const t = await sequelize.transaction();
@@ -163,13 +165,14 @@ const updateFoodCriteria = async (req, res, next) => {
         const existingFood = await food.findByPk(id, { transaction: t });
 
         if (!existingFood) {
-            throw new Error(`Food with id ${id} not found`);
+            return next(new ApiError(`Food with id ${id} not found`));
         }
 
         await existingFood.update({
             food_code,
             food_name,
             food_desc,
+            food_calories,
         }, { transaction: t });
 
         console.log("Updated food:", existingFood);
@@ -182,13 +185,14 @@ const updateFoodCriteria = async (req, res, next) => {
             console.log("Processing criteria:", criteria_name, "with calculation:", calculation);
 
             if (!criteria_name || criteria_name === "0") {
-                throw new Error(`Invalid criteria name: ${criteria_name}`);
+                return next(new ApiError(`Invalid criteria name: ${criteria_name}`));
             }
 
             const criteriaRecord = await criteria.findOne({ where: { criteria_name } }, { transaction: t });
 
             if (!criteriaRecord) {
-                throw new Error(`Criteria with name ${criteria_name} not found`);
+                return next(new ApiError(`Criteria with name ${criteria_name} not found`));
+                
             }
 
             const existingFoodCriteria = await trx_food_criteria.findOne({
@@ -245,8 +249,6 @@ const updateFoodCriteria = async (req, res, next) => {
     }
 }
 
-
-
 const deleteFoodCriteria = async (req, res, next) => {
     const { id } = req.params; 
 
@@ -256,7 +258,7 @@ const deleteFoodCriteria = async (req, res, next) => {
         const existingFood = await food.findByPk(id, { transaction: t });
 
         if (!existingFood) {
-            throw new Error(`Food with id ${id} not found`);
+            return next(new ApiError(`Food with id ${id} not found`));
         }
 
         await trx_food_criteria.destroy({
@@ -281,7 +283,6 @@ const deleteFoodCriteria = async (req, res, next) => {
         return next(new ApiError(err.message, 500));
     }
 };
-
 
 const getFoodCriteriaV = async (req, res, next) => {
     try{
@@ -309,6 +310,7 @@ const getAllFoodCriteriaCPI = async (req, res, next) => {
                 }
             }
         });
+        // console.log("DATA :",foods)
 
         const criteriaCalculations = {};
         const criteriaBobot = {};
@@ -329,70 +331,112 @@ const getAllFoodCriteriaCPI = async (req, res, next) => {
             });
         });
 
-        console.log("All criteria calculations:", criteriaCalculations);
-        console.log("All criteria bobot:", criteriaBobot);
+        // console.log("All criteria calculations:", criteriaCalculations);
+        // console.log("All criteria bobot:", criteriaBobot);
+
 
         const minCalculations = {};
         Object.keys(criteriaCalculations).forEach(criteria_name => {
-            minCalculations[criteria_name] = Math.min(...criteriaCalculations[criteria_name]);
-            console.log(`Minimum calculation for ${criteria_name}:`, minCalculations[criteria_name]);
+            minCalculations[criteria_name] = Math.min(...criteriaCalculations[criteria_name]); 
+            // console.log(`Minimum calculation for ${criteria_name}:`, minCalculations[criteria_name]);
         });
 
-        const foodIndices = {};
-        const formattedData = foods.map(foodItem => {
-            const criteria_values = foodItem.food_criteria.map(criteriaItem => {
+
+        const FoodDataScore = foods.map(async foodItem => {
+            let final_score = 0;
+            const criteria_values = await Promise.all(foodItem.food_criteria.map(async criteriaItem => {
                 const { criteriaview, calculation } = criteriaItem;
                 const { criteria_name, tren, bobot } = criteriaview;
 
                 let transformedCalculation;
                 if (tren === 'Positif') {
                     transformedCalculation = (calculation / minCalculations[criteria_name]) * 100;
-                    console.log(`Transformed calculation tren positif [for ${criteria_name}:`, transformedCalculation);
+                    // console.log(`Transformed calculation tren positif [for ${criteria_name}:`, transformedCalculation);
                 } else if (tren === 'Negatif') {
                     transformedCalculation = (minCalculations[criteria_name] / calculation) * 100;
-                    console.log(`Transformed calculation (tren negatif for ${criteria_name}:`, transformedCalculation);
+                    // console.log(`Transformed calculation (tren negatif for ${criteria_name}:`, transformedCalculation);
                 } else {
                     transformedCalculation = calculation;
-                    console.log(`No tren defined for ${criteria_name} :`, transformedCalculation);
+                    // console.log(`No tren defined for ${criteria_name} :`, transformedCalculation);
                 }
 
-                const alternativeIndex = transformedCalculation * parseFloat(bobot);
-                if (!foodIndices[foodItem.id]) {
-                    foodIndices[foodItem.id] = 0;
-                }
+                await trx_food_criteria.update(
+                    { calculation_tren: transformedCalculation },
+                    { where: { id: criteriaItem.id } }
+                );
 
-                foodIndices[foodItem.id] += alternativeIndex;
+                // const alternativeIndex = transformedCalculation * parseFloat(bobot);
+                // if (!foodIndices[foodItem.id]) {
+                //     foodIndices[foodItem.id] = 0;
+                // }
+
+                // foodIndices[foodItem.id] += alternativeIndex;
+                const bobotAlternative = transformedCalculation * parseFloat(bobot);
+                final_score += bobotAlternative;
+
+                console.log("transformedCalculation:", transformedCalculation);
+                console.log("bobot:", bobot);
+                console.log("bobotAlternative:", bobotAlternative);
+                console.log("final_score:", final_score);
+                
+
+                // const rankingAllFood = total_score;
+                // score_rank.sort((a, b) => b - a);
+                // console.log("ranking" , rankingAllFood)
+                
 
                 return {
                     criteria_id: criteriaview.id,
                     criteria_name: criteria_name,
-                    calculation: transformedCalculation
+                    calculation_tren: transformedCalculation
                 };
-            });
+            }));
+
+            await trx_food_criteria.update(
+                { total_score: final_score },
+                { where: { food_id: foodItem.id } }
+            );
 
             return {
                 id: foodItem.id,
                 food_code: foodItem.food_code,
                 food_name: foodItem.food_name,
                 food_desc: foodItem.food_desc,
-                criteria_values
+                criteria_values,
+                total_score: final_score,
+                
             };
+
         });
 
-        console.log("Formatted data:", formattedData);
-        console.log("Food indices:", foodIndices);
+        const resolvedFoodDataScore = await Promise.all(FoodDataScore);
+
+        FoodDataScore.sort((a, b) => b.total_score - a.total_score);
+
+
+        await Promise.all(FoodDataScore.map(async (foodItem, index) => {
+            foodItem.rank = index + 1;
+        
+            if (foodItem.id) {
+                await trx_food_criteria.update(
+                    { rank: foodItem.rank },
+                    { where: { food_id: foodItem.id } }
+                );
+            } else {
+                console.error('foodItem.id is undefined during rank update for:', foodItem);
+            }
+        }));
 
         res.status(200).json({
             status: true,
             message: "Food Criteria Fetched Successfully",
-            data: { formattedData, foodIndices }
+            data: resolvedFoodDataScore 
         });
     } catch (err) {
-        console.error("Error fetching food criteria:", err);
+        // console.error("Error fetching food criteria:", err);
         return next(new ApiError(err.message, 500));
     }
 };
-
 
 const getAllFoodBobotScore = async (req, res, next) => {
     try {
@@ -412,6 +456,67 @@ const getAllFoodBobotScore = async (req, res, next) => {
     }
 }
 
+const getRank = async (req, res, next) => {
+    try {
+        const allRanks = await trx_food_criteria.findAll({
+            order: [["total_score", "DESC"]],
+        });
+
+        if (allRanks.length === 0) {
+            return res.status(200).json({
+                status: "Success",
+                message: "No data available",
+                data: []
+            });
+        }
+
+        // ngitung total entri
+        const totalEntries = allRanks.length;
+        // itung ukuran tiap kelompok
+        const rank = Math.ceil(totalEntries / 3);
+
+        // atur peringkat
+        let currentRank = 1;
+        let currentGroup = 1;
+
+        const rankMap = new Map();
+
+        for (let i = 0; i < allRanks.length; i++) {
+            if (i > 0 && i % rank === 0) {
+                // Pindah ke kelompok rank lain jika ukuran kelompok trcapai
+                currentGroup++;
+                currentRank = currentGroup; // Set peringkat sesuai dengan kelompok pringkat 123
+            }
+            // Simpan pemetaan id -> rank
+            rankMap.set(allRanks[i].id, currentRank);
+        }
+
+        // Update peringkat pada entri
+        const updatePromises = allRanks.map(score => {
+            return score.update({ rank: rankMap.get(score.id) });
+        });
+
+        await Promise.all(updatePromises);
+
+        res.status(200).json({
+            status: "Success",
+            message: "Filtering Success",
+            data: allRanks.map(score => ({
+                id: score.id,
+                total_score: score.total_score,
+                rank: score.rank
+            }))
+        });
+
+    } catch (err) {
+        return next(new ApiError(err.message, 400));
+    }
+};
+
+module.exports = {
+    getRank
+};
+
 
 module.exports = {
     createFoodCriteria,
@@ -420,5 +525,7 @@ module.exports = {
     deleteFoodCriteria,
     FoodCriteria,
     getFoodCriteriaV,
-    getAllFoodCriteriaCPI
+    getAllFoodCriteriaCPI,
+    getRank
+    
 }

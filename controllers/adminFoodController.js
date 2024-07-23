@@ -4,12 +4,13 @@ const ApiError = require("../utils/apiError");
 
 
 const createFood = async (req, res, next) => {
-    const {food_code, food_name,food_desc} = req.body;
+    const {food_code, food_name,food_desc, food_calories} = req.body;
     try {
         const data = {
             food_code,
             food_name,
             food_desc,
+            food_calories
         }
         console.log(data);
         const newFood = await food.create(data);
@@ -39,7 +40,7 @@ const getAllFood = async (req, res, next) => {
 }
 
 const updateFood = async (req, res, next) => {
-    const {food_code, food_name, food_desc} = req.body;
+    const {food_code, food_name, food_desc, food_calories} = req.body;
     try{
         const id = req.params.id;
         const findFood = await food.findOne({
@@ -54,7 +55,8 @@ const updateFood = async (req, res, next) => {
         await food.update({
             food_code,
             food_name,
-            food_name
+            food_desc,
+            food_calories
         },
         {
             where: {
@@ -109,7 +111,7 @@ const deleteFood = async (req, res, next) => {
 
 const getTableName = async (req, res, next) => {
     try {
-        const foodAttributes = ['food_code', 'food_name', 'food_desc'];
+        const foodAttributes = ['food_code', 'food_name', 'food_desc', 'food_calories'];
         const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
 
         const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
