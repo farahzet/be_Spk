@@ -30,7 +30,7 @@ const getAllCriteria = async (req, res, next) => {
         const allCriteria = await criteria.findAll();
 
         res.status(200).json({
-            tatus: "Success",
+            status: true,
             message: "All Criteria successfully retrieved",
             data: { allCriteria },
         });
@@ -132,9 +132,9 @@ const getCriteriaForThead = async (req, res, next) => {
       
           // Mengubah nilai tren
           criteriaData = criteriaData.map(criterion => {
-            if (criterion.tren === 'positif') {
+            if (criterion.tren === 'Positif') {
               criterion.tren = '+';
-            } else if (criterion.tren === 'negatif') {
+            } else if (criterion.tren === 'Negatif') {
               criterion.tren = '-';
             }
             return criterion;

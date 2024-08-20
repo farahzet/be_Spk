@@ -18,6 +18,7 @@ module.exports = async (req, res, next) => {
         const userData = await users.findByPk(payload.user_id);
         console.log('User ID:', payload.user_id);
 
+        
         req.user = userData;
 
         if(!userData.id){

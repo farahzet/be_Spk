@@ -34,6 +34,10 @@ module.exports = (sequelize, DataTypes) => {
       type : DataTypes.STRING,
       allowNull : false
     },
+    food_calories: {
+      type : DataTypes.DECIMAL,
+      allowNull : true
+    },
   }, {
     sequelize,
     modelName: 'food',

@@ -8,8 +8,8 @@ const checkRole = require("../middlewares/checkRole");
 const { getAllFoodCalculation } = require("../controllers/adminTrx_calculationController");
 
 
-// router.post("/create", authenticate, checkRole('admin'), validation(createfood), createFood);
-router.post("/create",  createFood);
+router.post("/create", authenticate, createFood);
+// router.post("/create",  createFood);
 // router.get("/", authenticate, validation(food), getAllFood);
 router.patch("/:id", authenticate, checkRole('admin'), validation(food), updateFood);
 router.delete("/:id", authenticate, checkRole('admin'), validation(food), deleteFood);

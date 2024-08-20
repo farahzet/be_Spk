@@ -3,11 +3,20 @@ const ApiError = require("../utils/apiError");
 
 
 
+const getActivityIdByName = async (activity_name) => {
+    const activity = await activities.findOne({ where: { activity_name } });
+    if (!activity) {
+        throw new Error(`Invalid activity name: ${activity_name}`);
+    }
+    return activity.id;
+};
+
 const createCalculation = async (req, res, next) => {
-    const {user_id, activity_id, weight, height, gender, age, calories_score} = req.body;
-    
+    const {activity_name, weight, height, gender, age, food_id, calories, calories_score} = req.body;
+    const user_id = req.user.id;
 
     try {
+        const activity_id = await getActivityIdByName(activity_name);
         const activityData = await activities.findOne({ where: { id: activity_id } });
 
         if (!activityData) {
@@ -29,35 +38,58 @@ const createCalculation = async (req, res, next) => {
             return next (new ApiError(`Invalid gender value`))
         }
 
+        let score_age;
+        if (age > 40 && age < 60) {
+            score_age = kaloriBasal - ( kaloriBasal * 0.05);
+        } else if (age >= 60 && age <= 69) {
+            score_age = kaloriBasal - ( kaloriBasal * 0.10);
+        } else if (age >= 70) {
+            score_age = kaloriBasal - ( kaloriBasal * 0.20);
+        } else {
+            return next(new ApiError(`Invalid age_scrore value`));
+        }
+
         const activityUser = parseFloat(activityData.bobot);
         if (isNaN(activityUser)) {
             return next (new ApiError(`Invalid activity bobot value`))
             
         }
 
+        let totalCalories = score_age + (activityUser * score_age);
 
 
-        let totalCalories = kaloriBasal + (activityUser * kaloriBasal);
-
-        if (age > 40 && age < 60) {
-            totalCalories -= totalCalories * 0.05;
-        } else if (age >= 60 && age <= 69) {
-            totalCalories -= totalCalories * 0.10;
-        } else if (age > 69) {
-            totalCalories -= totalCalories * 0.20; 
+        let caloriesUser;
+        if (calories === 'Puasa' || calories === 'ICU') {
+            caloriesUser = totalCalories + 0.1 * totalCalories;
+        } else if (calories === 'Demam') {
+            caloriesUser = totalCalories + 0.15 * totalCalories;
+        } else if (calories === 'Gagal Jantung') {
+            caloriesUser = totalCalories + 0.2 * totalCalories;
+        } else if (calories === 'Sepsis') {
+            caloriesUser = totalCalories + 0.25 * totalCalories;
+        } else if (calories === 'Luka Bakar') {
+            caloriesUser = totalCalories + 0.3 * totalCalories;
+        } else {
+            return next(new ApiError('Invalid calories value'));
         }
+
+        caloriesUser = parseFloat(caloriesUser.toFixed(2));
 
         const data = {
-            user_id, 
-            activity_id, 
-            weight, 
-            height, 
-            gender, 
+            user_id,
+            activity_id,
+            weight,
+            height,
+            gender,
             age,
+            calories, // Ensure calories is included in the data object
+            food_id,
             kalori_basal: kaloriBasal,
-            activityuser : activityUser,
-            calories_score: totalCalories
-        }
+            scoreAge : score_age,
+            activityuser: activityUser,
+            total_cal: totalCalories,
+            calories_score: caloriesUser
+        };
         console.log(data);
         const newCalculation = await trx_calculations.create(data);
 
@@ -84,6 +116,86 @@ const getAllCalculation = async (req, res, next) => {
         return next (new ApiError(err.message, 400))
     }
 }
+
+const getCalculationsByUserId = async (req, res, next) => {
+    try {
+        const user_id = req.user.id;
+        console.log('user id ada?? ', user_id)
+
+        const calculations = await trx_calculations.findAll({
+            where: { user_id }, 
+        });
+
+        if (!calculations.length) {
+            return res.status(404).json({
+                status: "Failure",
+                message: "No calculations found for this user",
+            });
+        }
+
+        res.status(200).json({
+            status: "Success",
+            message: "Calculations retrieved successfully",
+            data: calculations,
+        });
+    } catch (err) {
+        return next(new ApiError(err.message, 400));
+    }
+};
+
+const findDataCaloriesCalculationById = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const findData = await trx_calculations.findOne({
+            where: {
+                id,
+            }
+        });
+        if (!findData) {
+            return next(new ApiError(`Calculation with id '${id}' not found`));
+        }
+        // Pastikan totalCalories ada di sini
+        res.status(200).json({
+            status: "Success",
+            message: "Calculation Successfully",
+            requestAt: req.requestTime,
+            data: { 
+                totalCalories: findData.calories_score // Ubah ke properti yang sesuai
+            }
+        });
+    } catch (err) {
+        return next(new ApiError(err.message, 400));
+    }
+};
+
+
+const findDataCalcuationById= async (req, res, next) => {
+    try {
+        const user_id = req.params.id;
+        console.log("user idnya apa sayanggg", user_id)
+
+        // Find all calculations by user_id
+        const calculations = await trx_calculations.findAll({
+            where: {
+                user_id,
+            }
+        });
+        console.log("datanya banyak gaa, harus banyak sih", calculations)
+
+        if (!calculations.length) {
+            return next(new ApiError(`No calculations found for user with id '${user_id}'`, 404));
+        }
+        res.status(200).json({
+            status: "Success",
+            message: "Calculations retrieved successfully",
+            requestAt: req.requestTime,
+            data: calculations
+        });
+    } catch (err) {
+        return next(new ApiError(err.message, 400));
+    }
+};
+
 
 const updateCalculation = async (req, res, next) => {
     const {user_id, food_id, activity_id, weight, height, gender, age} = req.body;
@@ -170,11 +282,16 @@ const getAllFoodCalculation = async (req, res, next) => {
     }
 }
 
-
 module.exports = {
     createCalculation,
     getAllCalculation,
     updateCalculation,
     deletecalculation,
-    getAllFoodCalculation
+    getAllFoodCalculation,
+    findDataCalcuationById,
+    getCalculationsByUserId,
+    findDataCaloriesCalculationById
+    
+
+   
 }

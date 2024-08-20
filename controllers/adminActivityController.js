@@ -30,7 +30,7 @@ const getAllActivity = async (req, res, next) => {
         const allActivity = await activities.findAll();
 
         res.status(200).json({
-            tatus: "Success",
+            status: true,
             message: "All Activity successfully retrieved",
             data: { allActivity },
         });
