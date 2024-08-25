@@ -111,7 +111,7 @@ const deleteFood = async (req, res, next) => {
 
 const getTableName = async (req, res, next) => {
     try {
-        const foodAttributes = ['food_code', 'food_name', 'food_desc', 'food_calories'];
+        const foodAttributes = ['food_code', 'food_name', 'food_desc'];
         const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
 
         const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
