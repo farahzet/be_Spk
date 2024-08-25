@@ -298,7 +298,6 @@ const getAllFoodCriteria = async (req, res, next) => {
             food_code: foodItem.food_code,
             food_name: foodItem.food_name,
             food_desc: foodItem.food_desc,
-            food_calories: foodItem.food_calories,
             criteria_values: foodItem.food_criteria.map(criteriaItem => ({
                 criteria_id: criteriaItem.criteriaview.id,
                 criteria_name: criteriaItem.criteriaview.criteria_name,

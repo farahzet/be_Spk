@@ -58,17 +58,30 @@ const createCalculation = async (req, res, next) => {
         let totalCalories = score_age + (activityUser * score_age);
 
 
+        // let caloriesUser;
+        // if (calories === 'Puasa' || calories === 'ICU') {
+        //     caloriesUser = totalCalories + 0.1 * totalCalories;
+        // } else if (calories === 'Demam') {
+        //     caloriesUser = totalCalories + 0.15 * totalCalories;
+        // } else if (calories === 'Gagal Jantung') {
+        //     caloriesUser = totalCalories + 0.2 * totalCalories;
+        // } else if (calories === 'Sepsis') {
+        //     caloriesUser = totalCalories + 0.25 * totalCalories;
+        // } else if (calories === 'Luka Bakar') {
+        //     caloriesUser = totalCalories + 0.3 * totalCalories;
+        // } else {
+        //     return next(new ApiError('Invalid calories value'));
+        // }
+
         let caloriesUser;
-        if (calories === 'Puasa' || calories === 'ICU') {
+        if (calories === 'Stress Ringan') {
+            caloriesUser = totalCalories + 0.05 * totalCalories;
+        } else if (calories === 'Stress Sedang') {
             caloriesUser = totalCalories + 0.1 * totalCalories;
-        } else if (calories === 'Demam') {
-            caloriesUser = totalCalories + 0.15 * totalCalories;
-        } else if (calories === 'Gagal Jantung') {
+        } else if (calories === 'Stress Berat') {
             caloriesUser = totalCalories + 0.2 * totalCalories;
-        } else if (calories === 'Sepsis') {
+        } else if (calories === 'Stress Sangat Berat') {
             caloriesUser = totalCalories + 0.25 * totalCalories;
-        } else if (calories === 'Luka Bakar') {
-            caloriesUser = totalCalories + 0.3 * totalCalories;
         } else {
             return next(new ApiError('Invalid calories value'));
         }
@@ -117,31 +130,42 @@ const getAllCalculation = async (req, res, next) => {
     }
 }
 
-const getCalculationsByUserId = async (req, res, next) => {
-    try {
-        const user_id = req.user.id;
-        console.log('user id ada?? ', user_id)
+const getSemuaData = async (req, res, next) => {
+    const user_id = req.user.id;
 
+    try {
+        // Fetch all calculations for the logged-in user
         const calculations = await trx_calculations.findAll({
-            where: { user_id }, 
+            where: { user_id },
+            
         });
 
+        // Check if the user has any calculations
         if (!calculations.length) {
             return res.status(404).json({
-                status: "Failure",
-                message: "No calculations found for this user",
+                status: "Fail",
+                message: "No calculations found for the user"
             });
         }
 
+        const formattedCalculations = calculations.map(calc => {
+            return {
+                ...calc.get(), // Retrieve the plain object representation
+                createdAt: calc.createdAt.toLocaleDateString('en-GB') // Format to DD/MM/YYYY
+            };
+        });
+
+        // Respond with the calculations
         res.status(200).json({
             status: "Success",
-            message: "Calculations retrieved successfully",
-            data: calculations,
+            message: "Data retrieved successfully",
+            data: formattedCalculations
         });
     } catch (err) {
-        return next(new ApiError(err.message, 400));
+        return next(new ApiError(err.message, 500));
     }
-};
+}
+
 
 const findDataCaloriesCalculationById = async (req, res, next) => {
     try {
@@ -289,9 +313,6 @@ module.exports = {
     deletecalculation,
     getAllFoodCalculation,
     findDataCalcuationById,
-    getCalculationsByUserId,
-    findDataCaloriesCalculationById
-    
-
-   
+    findDataCaloriesCalculationById,
+    getSemuaData,
 }

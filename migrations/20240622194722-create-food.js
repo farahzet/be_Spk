@@ -21,10 +21,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull : false
       },
-      food_calories: {
-        type: Sequelize.DECIMAL,
-        allowNull : true
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

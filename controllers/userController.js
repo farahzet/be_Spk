@@ -224,6 +224,7 @@ const getUserRegisterIn = async (req, res, next) => {
         return next(new ApiError(500, { message: err.message }));
     }
 }
+
 module.exports = {
     login,
     register,
