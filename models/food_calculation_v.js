@@ -3,60 +3,52 @@ const {
     Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class user_calculation_v extends Model {
+    class food_calculation_v extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-        user_calculation_v.belongsTo(models.users, {
-            foreignKey: 'user_id',
-            as: 'calculation_users_v'
-        })
-
-        user_calculation_v.belongsTo(models.trx_calculations, {
-            foreignKey: 'calculation_id',
-            as: 'calculation_user_v'
-        })
+        
         
     }
     }
 
-    user_calculation_v.init({
+    food_calculation_v.init({
     calculation_id: {
         type: DataTypes.INTEGER,
     },
-    user_id: {
+    food_id: {
         type: DataTypes.INTEGER,
     },
-    username: {
+    criteria_id: {
+        type: DataTypes.INTEGER,
+    },
+    food_code: {
         type: DataTypes.STRING,
     },
-    weight: {
-        type: DataTypes.INTEGER,
-    },
-    height: {
-        type: DataTypes.INTEGER,
-    },
-    age: {
-        type: DataTypes.INTEGER,
-    },
-    gender: {
+    food_name: {
         type: DataTypes.STRING,
     },
-    activity_name: {
+    criteria_name: {
         type: DataTypes.STRING,
     },
-    activity_level: {
+    criteria_code: {
         type: DataTypes.STRING,
     },
     bobot: {
         type: DataTypes.INTEGER,
     },
+    tren: {
+        type: DataTypes.STRING,
+    },
+    calculation: {
+        type: DataTypes.INTEGER,
+    },
     }, {
     sequelize,
-    modelName: 'user_calculation_v',
+    modelName: 'food_calculation_v',
     });
-    return user_calculation_v;
+    return food_calculation_v;
 };

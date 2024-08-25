@@ -15,7 +15,7 @@ module.exports = {
       },
       food_id: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: true
       },
       activity_id: {
         type: Sequelize.INTEGER,
@@ -35,6 +35,14 @@ module.exports = {
       },
       age: {
         type: Sequelize.INTEGER,
+        allowNull: false
+      },
+      calories: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      calories_score: {
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       createdAt: {

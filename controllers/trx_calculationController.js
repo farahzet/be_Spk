@@ -114,6 +114,80 @@ const deletecalculation = async (req, res, next) => {
     }
 }
 
+const findCaloriesCalcuationById = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const findData = await trx_calculations.findOne({
+            where: {
+                id,
+            }
+        })
+        if (!findData){
+            return next (new ApiError(`Calculation with id '${id}' not found`))
+        }
+        res.status(200).json({
+            status: "Success",
+            message: "Calculation Successfully",
+            requestAt : req.requestTime,
+            data:{findData}
+        })
+    } catch (err) {
+        return next (new ApiError (err.message, 400))
+    }
+}
+
+const findDataCalcuationById= async (req, res, next) => {
+    try {
+        const user_id = req.params.id;
+        console.log("user idnya apa sayanggg", user_id)
+
+        const calculations = await trx_calculations.findAll({
+            where: {
+                user_id,
+            }
+        });
+        console.log("datanya banyak gaa, harus banyak sih", calculations)
+
+        if (!calculations.length) {
+            return next(new ApiError(`No calculations found for user with id '${user_id}'`, 404));
+        }
+        res.status(200).json({
+            status: "Success",
+            message: "Calculations retrieved successfully",
+            requestAt: req.requestTime,
+            data: calculations
+        });
+    } catch (err) {
+        return next(new ApiError(err.message, 400));
+    }
+};
+
+const findDataCalcuationByUserId= async (req, res, next) => {
+    try {
+        const user_id = req.user.id;
+        console.log("user idnya apa sayanggg", user_id)
+
+        const calculations = await trx_calculations.findAll({
+            where: {
+                user_id,
+            }
+        });
+        console.log("datanya banyak gaa, harus banyak sih", calculations)
+
+        if (!calculations.length) {
+            return next(new ApiError(`No calculations found for user with id '${user_id}'`, 404));
+        }
+        res.status(200).json({
+            status: "Success",
+            message: "Calculations retrieved successfully",
+            requestAt: req.requestTime,
+            data: calculations
+        });
+    } catch (err) {
+        return next(new ApiError(err.message, 400));
+    }
+};
+
 
 module.exports = {
     createCalculation,

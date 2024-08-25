@@ -24,6 +24,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'user_id',
         as: 'calculation_user'
       })
+
+      trx_calculation.hasMany(models.user_calculation_v, {
+        foreignKey: 'calculation_id',
+        as: 'calculation_user_v'
+      })
+      
     }
   }
   
@@ -34,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     food_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true
     },
     activity_id: {
       type: DataTypes.INTEGER,
@@ -55,6 +61,14 @@ module.exports = (sequelize, DataTypes) => {
     age: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    calories: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    calories_score: {
+      type: DataTypes.FLOAT,
+      allowNull: true
     },
   }, {
     sequelize,

@@ -1,4 +1,5 @@
 const createHttpError = require('http-errors');
+const ApiError = require("../utils/apiError");
 
 
 module.exports = (schema) => {
@@ -8,9 +9,9 @@ module.exports = (schema) => {
             req.body = validated;
             next();
         } catch (error) {
-            if (error.isJoi) return next(createHttpError(422, { message: error.message }))
+            if (error.isJoi) return next(new ApiError(error.message, 400))
 
-                next(createHttpError(500))
+                return next(new ApiError(err.message, 500));
         }
     }
 }

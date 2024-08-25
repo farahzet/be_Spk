@@ -21,6 +21,18 @@ module.exports = {
         type: Sequelize.DECIMAL,
         allowNull: false
       },
+      calculation_tren: {
+        type: Sequelize.DECIMAL,
+        allowNull: true
+      },
+      total_score: {
+        type: Sequelize.DECIMAL,
+        allowNull: true
+      },
+      rank: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

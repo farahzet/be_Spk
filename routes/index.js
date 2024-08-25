@@ -13,6 +13,6 @@ router.use("/api/v1/criteria", criteriaRouter)
 router.use("/api/v1/activity", activityRouter)
 router.use("/api/v1/user", userRouter)
 router.use("/api/v1/calculation", calculationRouter)
-router.use("/api/v1/foodcriteria", FoodcriteriaRouter)
+router.use("/api/v1/foodCriteria", FoodcriteriaRouter)
 
 module.exports = router;

@@ -1,14 +1,16 @@
 const {food} = require("../models");
+const {criteria, sequelize} = require("../models");
 const ApiError = require("../utils/apiError");
 
 
 const createFood = async (req, res, next) => {
-    const {food_code, food_name,food_desc} = req.body;
+    const {food_code, food_name,food_desc, food_calories} = req.body;
     try {
         const data = {
             food_code,
             food_name,
             food_desc,
+            food_calories
         }
         console.log(data);
         const newFood = await food.create(data);
@@ -28,7 +30,7 @@ const getAllFood = async (req, res, next) => {
         const allFood = await food.findAll();
 
         res.status(200).json({
-            tatus: "Success",
+            status: "Success",
             message: "All Food successfully retrieved",
             data: { allFood },
         });
@@ -38,7 +40,7 @@ const getAllFood = async (req, res, next) => {
 }
 
 const updateFood = async (req, res, next) => {
-    const {food_code, food_name, food_desc} = req.body;
+    const {food_code, food_name, food_desc, food_calories} = req.body;
     try{
         const id = req.params.id;
         const findFood = await food.findOne({
@@ -53,7 +55,8 @@ const updateFood = async (req, res, next) => {
         await food.update({
             food_code,
             food_name,
-            food_name
+            food_desc,
+            food_calories
         },
         {
             where: {
@@ -94,6 +97,8 @@ const deleteFood = async (req, res, next) => {
             },
         })
 
+        // await findFood.destroy();
+
         res.status(200).json({
             status: "Success",
             message: "Food successfully deleted",
@@ -104,10 +109,50 @@ const deleteFood = async (req, res, next) => {
     }
 }
 
+const getTableName = async (req, res, next) => {
+    try {
+        const foodAttributes = ['food_code', 'food_name', 'food_desc', 'food_calories'];
+        const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
+
+        const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
+
+        res.json({
+            data: {
+                food: foodAttributes,
+                criteria: criteriaNames,
+            },
+        });
+    } catch (error) {
+        next(new ApiError(error.message, 500));
+    }
+}
+
+const getTableNameScore = async (req, res, next) => {
+    try {
+        const foodAttributes = ['id', 'food_name', 'food_desc'];
+        const criteriaAttributes = await criteria.findAll({ attributes: ['criteria_name'] });
+
+        const criteriaNames = criteriaAttributes.map(attr => attr.criteria_name);
+
+        res.json({
+            data: {
+                food: foodAttributes,
+                criteria: criteriaNames,
+            },
+        });
+    } catch (error) {
+        next(new ApiError(error.message, 500));
+    }
+}
+
+
+
 
 module.exports = {
     createFood,
     getAllFood,
     updateFood,
-    deleteFood
+    deleteFood,
+    getTableName,
+    getTableNameScore
 }

@@ -4,20 +4,22 @@ const {
 } = require('sequelize');
 const { hasMany } = require('sequelize/lib/associations/mixin');
 module.exports = (sequelize, DataTypes) => {
-  class activity extends Model {
+  class activities extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      activity.hasMany(models.trx_calculations, {
-        foreignKey: 'calculation_id',
+      activities.hasMany(models.trx_calculations, {
+        foreignKey: 'activity_id',
         as: 'calculation_act'
       })
+
+      
     }
   }
-  activity.init({
+  activities.init({
     activity_name: {
       type: DataTypes.STRING,
       allowNull: false
@@ -34,5 +36,5 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'activities',
   });
-  return activity;
+  return activities;
 };

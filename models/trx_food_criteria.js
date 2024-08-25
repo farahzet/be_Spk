@@ -25,15 +25,35 @@ module.exports = (sequelize, DataTypes) => {
   trx_food_criteria.init({
     food_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'food', 
+        key: 'id'
+      }
     },
     criteria_id: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'criteria',
+        key: 'id'
+      }
     },
     calculation: {
       type: DataTypes.DECIMAL,
       allowNull: false
+    },
+    calculation_tren: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    total_score: {
+      type: DataTypes.DECIMAL,
+      allowNull: true
+    },
+    rank: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     },
   }, {
     sequelize,
